@@ -12,7 +12,7 @@ public:
     void print() const;
 
 private:
-    std::array<std::uint8_t, 4096> m_memory {};
+    std::array<uint8_t, 4096> m_data {};
 };
 
 #endif

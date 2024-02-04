@@ -26,7 +26,7 @@ Memory::Memory() {
     std::size_t counter {0x0};
 
     for (auto byte : font) {
-        m_memory[fontStartInMemory + counter] = byte; 
+        m_data[fontStartInMemory + counter] = byte; 
         ++counter;
     }
 }
@@ -34,7 +34,7 @@ Memory::Memory() {
 // DEBUG
 void Memory::print() const {
     std::cout << std::hex;
-    for (std::size_t i {0}; i < m_memory.size(); ++i) {
-        std::cout << "Address: " << i << '\t' << "Value: " << static_cast<int>(m_memory[i]) << "\n"; 
+    for (std::size_t i {0}; i < m_data.size(); ++i) {
+        std::cout << "Address: " << i << '\t' << "Value: " << static_cast<int>(m_data[i]) << "\n"; 
     }
 }
