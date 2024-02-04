@@ -5,16 +5,15 @@ OBJS =
 CC = g++
 
 #COMPILER_FLAGS specifies the additional compilation options we're using
-# -w suppresses all warnings
 COMPILER_FLAGS_DEBUG = -std=c++20 -Wall -Wextra -g -Og -pedantic
+COMPILER_FLAGS_RELEASE = -std=c++20 -DRELEASE -O2 -Wall -Wextra -pedantic
 
-COMPILER_FLAGS_RELEASE = -DRELEASE -O2 -std=c++20
 #LINKER_FLAGS specifies the libraries we're linking against
 LINKER_FLAGS = -lSDL2
 
 #OBJ_NAME specifies the name of our exectuable
-OBJ_NAME_DEBUG = something_d
-OBJ_NAME_RELEASE = something 
+OBJ_NAME_DEBUG = bin/something_d
+OBJ_NAME_RELEASE = bin/something 
 
 #This is the target that compiles our executable
 debug : $(OBJS)
