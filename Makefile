@@ -1,5 +1,5 @@
 #OBJS specifies which files to compile as part of the project
-OBJS = 
+OBJS = src/main.cpp src/Memory.cpp 
 
 #CC specifies which compiler we're using
 CC = g++
@@ -12,8 +12,8 @@ COMPILER_FLAGS_RELEASE = -std=c++20 -DRELEASE -O2 -Wall -Wextra -pedantic
 LINKER_FLAGS = -lSDL2
 
 #OBJ_NAME specifies the name of our exectuable
-OBJ_NAME_DEBUG = bin/something_d
-OBJ_NAME_RELEASE = bin/something 
+OBJ_NAME_DEBUG = bin/emulator_d
+OBJ_NAME_RELEASE = bin/emulator 
 
 #This is the target that compiles our executable
 debug : $(OBJS)
