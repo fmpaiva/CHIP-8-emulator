@@ -1,5 +1,6 @@
 #include "Memory.h"
 #include <array>
+#include <cstdint>
 #include <iostream>
 
 Memory::Memory() {
@@ -31,7 +32,6 @@ Memory::Memory() {
 }
 
 // DEBUG
-
 void Memory::print() const {
     std::cout << std::hex;
     for (std::size_t i {0}; i < m_memory.size(); ++i) {
