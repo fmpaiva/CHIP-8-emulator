@@ -4,13 +4,6 @@
 
 
 Display::Display() {
-    // DEBUG
-    for (int i {20}; i < PIXEL_HEIGHT; ++i) {
-        for (int j {5}; j < PIXEL_WIDTH; ++j) {
-            m_display[i][j] = true;
-        }
-    }
-
     if (!init()) {
         std::cerr << "Failed to initialize.\n";
         close();

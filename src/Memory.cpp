@@ -2,6 +2,7 @@
 #include <array>
 #include <cstdint>
 #include <iostream>
+#include <cassert>
 
 Memory::Memory() {
     constexpr std::array<uint8_t, 80> font {
@@ -29,6 +30,13 @@ Memory::Memory() {
         m_data[fontStartInMemory + counter] = byte; 
         ++counter;
     }
+}
+
+uint8_t& Memory::operator[](uint16_t index) {
+#ifndef RELEASE
+    assert(index >= 0 && index < 4096 && "Memory access out of bounds");
+#endif
+    return m_data[static_cast<std::size_t>(index)];
 }
 
 // DEBUG

@@ -3,6 +3,12 @@
 
 #include <cstdint>
 #include <thread>
+#include <mutex>
+
+/* CHIP-8 has two timers. Delay timer and sound timer. They're both one byte in size
+ * and as long as their value is above 0, it is decremented at a rate of 60 Hz.
+ * Sound timer emits a beep while its value is above 0.
+ */
 
 class Timer {
 public:

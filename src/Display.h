@@ -19,7 +19,7 @@ public:
 private:
     SDL_Window* m_window {nullptr};
     SDL_Renderer* m_renderer {nullptr};
-    std::array<std::array<bool, PIXEL_WIDTH>, PIXEL_HEIGHT> m_display {}; 
+    std::array<std::array<bool, PIXEL_WIDTH>, PIXEL_HEIGHT> m_display {}; // 64x32 pixels with two stats: on or off.
 
     bool init();
     void close();

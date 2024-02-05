@@ -7,6 +7,7 @@
 class Memory {
 public:
     Memory();
+    uint8_t& operator[](uint16_t index);
 
     // DEBUG 
     void print() const;
