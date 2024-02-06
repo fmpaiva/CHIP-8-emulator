@@ -3,11 +3,12 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
 
 class Memory {
 public:
-    Memory();
-    uint8_t& operator[](uint16_t index);
+    Memory(const std::string&);
+    uint8_t& operator[](uint16_t);
 
     // DEBUG 
     void print() const;

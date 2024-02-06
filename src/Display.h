@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include <array>
 
+class Interpreter;
+
 constexpr int PIXEL_HEIGHT {32};
 constexpr int PIXEL_WIDTH {64};
 constexpr int SCREEN_WIDTH {640};
@@ -15,11 +17,14 @@ public:
     Display();
     ~Display();
     void render();
+    void clearScreen();
+    bool isOn(int, int);
+    void toggle(int, int);
 
 private:
     SDL_Window* m_window {nullptr};
     SDL_Renderer* m_renderer {nullptr};
-    std::array<std::array<bool, PIXEL_WIDTH>, PIXEL_HEIGHT> m_display {}; // 64x32 pixels with two stats: on or off.
+    std::array<std::array<bool, PIXEL_WIDTH>, PIXEL_HEIGHT> m_data {}; 
 
     bool init();
     void close();
