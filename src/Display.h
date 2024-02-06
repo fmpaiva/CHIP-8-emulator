@@ -3,14 +3,9 @@
 
 #include <SDL2/SDL.h>
 #include <array>
+#include "Constants.h"
 
-class Interpreter;
-
-constexpr int PIXEL_HEIGHT {32};
-constexpr int PIXEL_WIDTH {64};
-constexpr int SCREEN_WIDTH {640};
-constexpr int SCREEN_HEIGHT {320};
-constexpr int CELL_SIZE {SCREEN_WIDTH / PIXEL_WIDTH};
+using namespace Constants;
 
 class Display {
 public:

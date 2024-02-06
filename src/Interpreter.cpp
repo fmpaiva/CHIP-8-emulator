@@ -1,35 +1,11 @@
 #include "Interpreter.h"
+#include "Constants.h"
 #include <cstdint>
 #include <iostream>
 #include <array>
 #include <string>
 
-// Masks
-constexpr uint16_t firstNibble  {0xF000}; // 1111'0000'0000'0000    
-constexpr uint16_t secondNibble {0x0F00}; // 0000'1111'0000'0000    
-constexpr uint16_t thirdNibble  {0x00F0}; // 0000'0000'1111'0000    
-constexpr uint16_t fourthNibble {0x000F}; // 0000'0000'0000'1111    
-constexpr std::array<uint8_t, 8> eachBit {
-    0x80, // 1000'0000
-    0x40, // 0100'0000
-    0x20, // 0010'0000
-    0x10, // 0001'0000
-    0x8,  // 0000'1000 
-    0x4,  // 0000'0100
-    0x2,  // 0000'0010
-    0x1,  // 0000'0001
-};
-
-constexpr std::array<uint8_t, 8> eachBitRev {
-    0x1,  // 0000'0001
-    0x2,  // 0000'0010
-    0x4,  // 0000'0100
-    0x8,  // 0000'1000 
-    0x10, // 0001'0000
-    0x20, // 0010'0000
-    0x40, // 0100'0000
-    0x80, // 1000'0000
-};
+using namespace Masks;
 
 Interpreter::Interpreter(const std::string& path): m_memory {path} 
 {}

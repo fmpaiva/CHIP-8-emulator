@@ -1,4 +1,3 @@
-#include "Memory.h"
 #include <array>
 #include <cstdint>
 #include <iostream>
@@ -7,9 +6,9 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include "Memory.h"
+#include "Constants.h"
 
-constexpr std::size_t fontLocationInMemory {0x50};
-constexpr std::size_t programLocationInMemory {0x200};
 
 Memory::Memory(const std::string& path) {
     constexpr std::array<uint8_t, 80> font {
@@ -31,7 +30,7 @@ Memory::Memory(const std::string& path) {
         0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
 
-    std::copy(font.begin(), font.end(), m_data.begin() + fontLocationInMemory);
+    std::copy(font.begin(), font.end(), m_data.begin() + Constants::fontLocationInMemory);
 
     std::ifstream ifs(path, std::ios::binary|std::ios::ate);
     std::ifstream::pos_type pos = ifs.tellg();
@@ -41,7 +40,7 @@ Memory::Memory(const std::string& path) {
     ifs.seekg(0, std::ios::beg);
     ifs.read(buffer.data(), pos);
 
-    std::copy(buffer.begin(), buffer.end(), m_data.begin() + programLocationInMemory);
+    std::copy(buffer.begin(), buffer.end(), m_data.begin() + Constants::programLocationInMemory);
 }
 
 uint8_t& Memory::operator[](uint16_t index) {

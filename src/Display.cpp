@@ -1,6 +1,9 @@
 #include "Display.h"
 #include <SDL2/SDL.h>
 #include <iostream>
+#include "Constants.h"
+
+using namespace Constants;
 
 
 Display::Display() { 

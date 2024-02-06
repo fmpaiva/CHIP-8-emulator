@@ -1,10 +1,10 @@
 #include "Timer.h"
+#include "Constants.h"
 #include <thread>
 #include <chrono>
 #include <cstdint>
 #include <mutex>
 
-constexpr double timerFrequency {1.0/60.0}; // 60Hz
 
 Timer::Timer() {
     start();
@@ -34,7 +34,7 @@ void Timer::timer() {
             std::lock_guard<std::mutex> lock(m_mutex);
             if (!m_running) break;
         }
-        std::this_thread::sleep_for(std::chrono::duration<double>(timerFrequency));
+        std::this_thread::sleep_for(std::chrono::duration<double>(Constants::timerFrequency));
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             if (m_value > 0)

@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include "Constants.h"
 
 class Memory {
 public:
@@ -14,7 +15,7 @@ public:
     void print() const;
 
 private:
-    std::array<uint8_t, 4096> m_data {};
+    std::array<uint8_t, Constants::memorySize> m_data {};
 };
 
 #endif
