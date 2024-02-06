@@ -27,10 +27,8 @@ private:
     uint16_t m_programCounter {Constants::programLocationInMemory}; // PC: Points at current instruction in memory
     std::stack<uint16_t> m_stack {};
     
-    void opDXYN(const uint16_t); 
+    void opDXYN(const uint16_t);
     void op8XY4(const uint16_t);
-    uint16_t getNNN(const uint16_t);
-    uint8_t getNN(const uint16_t); 
 };
 
 #endif

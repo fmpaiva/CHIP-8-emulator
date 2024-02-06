@@ -1,11 +1,16 @@
 #include "Interpreter.h"
 #include "Constants.h"
+#include "VRegister.h"
 #include <cstdint>
 #include <iostream>
 #include <array>
 #include <string>
 
+uint16_t decodeNNN(const uint16_t);
+uint8_t decodeNN(const uint16_t); 
+
 using namespace Masks;
+using enum VRegister::Index;
 
 Interpreter::Interpreter(const std::string& path): m_memory {path} 
 {}
@@ -21,9 +26,9 @@ uint16_t Interpreter::fetch() { // Each instruction is 2 bytes so we have to rea
 }
 
 void Interpreter::opDXYN(const uint16_t instruction) {
-    const int xpos {m_variableRegister[(secondNibble & instruction) >> 8] % PIXEL_WIDTH};
-    const int ypos {m_variableRegister[(thirdNibble & instruction) >> 4] % PIXEL_HEIGHT};
-    m_variableRegister[0xF] = 0x0; // VF acts as a flag
+    const int xpos {m_vReg(instruction, vx) % PIXEL_WIDTH};
+    const int ypos {m_vReg(instruction, vy) % PIXEL_HEIGHT};
+    m_vReg(vf) = 0x0; // VF acts as a flag
     uint8_t spriteData {};
     int x {xpos};
     int y {ypos};
@@ -38,7 +43,7 @@ void Interpreter::opDXYN(const uint16_t instruction) {
             if (spriteData & eachBit[col]) {
 
                 if (m_display.isOn(y, x)) {
-                    m_variableRegister[0xF] = 0x1;
+                    m_vReg(vf) = 0x1;
                 }
 
                 m_display.toggle(y, x);
@@ -57,16 +62,14 @@ void Interpreter::opDXYN(const uint16_t instruction) {
 }
 
 void Interpreter::op8XY4(const uint16_t instruction) {
-    int value {m_variableRegister[(secondNibble & instruction) >> 8] + 
-                m_variableRegister[(thirdNibble & instruction) >> 4]};
+    int value {m_vReg(instruction, vx) + m_vReg(instruction, vy)};
     if (value > 255) {
-        m_variableRegister[0xF] = 0x1;
+        m_vReg(vf) = 0x1;
     } else {
-        m_variableRegister[0xF] = 0x0;
+        m_vReg(vf) = 0x0;
     }
-    
-    m_variableRegister[(secondNibble & instruction) >> 8] += 
-        m_variableRegister[(thirdNibble & instruction) >> 4];
+
+    m_vReg(instruction, vx) += m_vReg(instruction, vy);
 }
 
 void Interpreter::opcodeExec(const uint16_t instruction) {
@@ -87,96 +90,81 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
             break;
 
         case 0x1000: // 1NNN jump: Set PC (program counter) to NNN
-            m_programCounter = (secondNibble | thirdNibble | fourthNibble) & instruction;
+            m_programCounter = decodeNNN(instruction);
             break;
 
         case 0x2000: // 2NNN subroutine: Calls subroutine at NNN
             m_stack.push(m_programCounter); // Same as jump but add current PC to stack so we can return later 
-            m_programCounter = (secondNibble | thirdNibble | fourthNibble) & instruction;
+            m_programCounter = decodeNNN(instruction);
             break;
 
         case 0x3000: // 3XNN: Skips next instruction if VX == NN
-            if (m_variableRegister[(secondNibble & instruction) >> 8] == 
-                        ((thirdNibble | fourthNibble) & instruction))
-            {
+            if (m_vReg(instruction, vx) == decodeNN(instruction)) {
                 m_programCounter += 2; // An instruction is 2 bytes
             }
             break;
 
         case 0x4000: // 4XNN: Skips next instruction if VX != NN
-            if (m_variableRegister[(secondNibble & instruction) >> 8] != 
-                        ((thirdNibble | fourthNibble) & instruction)) 
-            {
+            if (m_vReg(instruction, vx) != decodeNN(instruction)) {
                 m_programCounter += 2; // An instruction is 2 bytes
             }
             break;
 
         case 0x5000: // 5XY0: Skips next instruction if VX == VY
-            if (m_variableRegister[(secondNibble & instruction) >> 8] == 
-                m_variableRegister[(thirdNibble & instruction) >> 4]) 
-            {
+            if (m_vReg(instruction, vx) == m_vReg(instruction, vy)) {
                 m_programCounter += 2;
             }
             break;
 
         case 0x6000: // 6XNN set: Set variable register VX to NN 
-            m_variableRegister[(secondNibble & instruction) >> 8] = (thirdNibble | fourthNibble) & instruction;
+            m_vReg(instruction, vx) = decodeNN(instruction);
             break;
 
         case 0x7000: // 7XNN add: Add NN to variable register VX
-            m_variableRegister[(secondNibble & instruction) >> 8] += (thirdNibble | fourthNibble) & instruction;
+            m_vReg(instruction, vx) += decodeNN(instruction);
             break;
 
         case 0x8000:
             switch (fourthNibble & instruction) {
                 case 0x0000: // 8XY0: VX is set to VY 
-                    m_variableRegister[(secondNibble & instruction) >> 8] = 
-                        m_variableRegister[(thirdNibble & instruction) >> 4];
+                    m_vReg(instruction, vx) = m_vReg(instruction, vy);
                     break;
 
                 case 0x0001: // 8XY1: VX = VX | VY
-                    m_variableRegister[(secondNibble & instruction) >> 8] = 
-                        m_variableRegister[(secondNibble & instruction) >> 8] | 
-                        m_variableRegister[(thirdNibble & instruction) >> 4];
+                    m_vReg(instruction, vx) |= m_vReg(instruction, vy);
                     break;
 
                 case 0x0002: // 8XY2: VX = VX & VY
-                    m_variableRegister[(secondNibble & instruction) >> 8] = 
-                        m_variableRegister[(secondNibble & instruction) >> 8] & 
-                        m_variableRegister[(thirdNibble & instruction) >> 4];
+                    m_vReg(instruction, vx) &= m_vReg(instruction, vy);
                     break;
 
                 case 0x0003: // 8XY3: VX = VX ^ VY 
-                    m_variableRegister[(secondNibble & instruction) >> 8] = 
-                        m_variableRegister[(secondNibble & instruction) >> 8] ^ 
-                        m_variableRegister[(thirdNibble & instruction) >> 4];
+                    m_vReg(instruction, vx) ^= m_vReg(instruction, vy);
                     break;
 
                 case 0x0004: // 8XY4: VX += VY and VF is set to one if VX overflows
                     op8XY4(instruction);
                     break;
 
-                case 0x0005: // 8XY5: VX = VX - VY
-                    if (m_variableRegister[(secondNibble & instruction) >> 8] > 
-                        m_variableRegister[(thirdNibble & instruction) >> 4]) 
-                    {
-                        
-                    }
-                    
+                // case 0x0005: // 8XY5: VX = VX - VY
+                //     if (m_variableRegister[(secondNibble & instruction) >> 8] > 
+                //         m_variableRegister[(thirdNibble & instruction) >> 4]) 
+                //     {
+                //         
+                //     }
+                //     
             
             }
             break;
 
         case 0x9000: // 9XY0: Skips next instruction if VX != VY
-            if (m_variableRegister[(secondNibble & instruction) >> 8] != 
-                m_variableRegister[(thirdNibble & instruction) >> 4]) 
-            {
+            if (m_vReg(instruction, vx) != m_vReg(instruction, vy)) {
                 m_programCounter += 2;
             }
             break;
 
         case 0xA000: // ANNN set index: set index register to value NNN
-            m_indexRegister = (secondNibble | thirdNibble | fourthNibble) & instruction;
+            m_indexRegister = decodeNNN(instruction);
             break;
 
         case 0xD000: // DXYN draws to screen
@@ -191,3 +179,17 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
 
     return;
 }
+
+
+
+
+
+
+
+uint16_t decodeNNN(const uint16_t instruction) {
+    return (secondNibble | thirdNibble | fourthNibble) & instruction;
+}
+
+uint8_t decodeNN(const uint16_t instruction) {
+    return (thirdNibble | fourthNibble) & instruction;
+} 
