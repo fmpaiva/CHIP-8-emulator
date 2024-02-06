@@ -156,7 +156,13 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
                     op8XY4(instruction);
                     break;
 
-                // case 0x0005: // 8XY5: VX = VX - VY
+                case 0x0005: // 8XY5: VX = VX - VY
+                    if (m_variableRegister[(secondNibble & instruction) >> 8] > 
+                        m_variableRegister[(thirdNibble & instruction) >> 4]) 
+                    {
+                        
+                    }
+                    
             
             }
             break;
