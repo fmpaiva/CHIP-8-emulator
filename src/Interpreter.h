@@ -6,7 +6,6 @@
 #include "Constants.h"
 #include "Display.h"
 #include "VRegister.h"
-#include "Keypad.h"
 #include <SDL2/SDL.h>
 #include <stack>
 #include <array>
@@ -33,7 +32,6 @@ private:
     void opcodeExec(const uint16_t);
     void opDXYN(const uint16_t);
     bool handleInput();
-    void waitInput();
 };
 
 #endif
