@@ -9,7 +9,6 @@
 #include "Memory.h"
 #include "Constants.h"
 
-
 Memory::Memory(const std::string& path) {
     constexpr std::array<uint8_t, 80> font {
         0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -32,7 +31,7 @@ Memory::Memory(const std::string& path) {
 
     std::copy(font.begin(), font.end(), m_data.begin() + Constants::fontLocationInMemory);
 
-    std::ifstream ifs(path, std::ios::binary|std::ios::ate);
+    std::ifstream ifs(path, std::ios::binary | std::ios::ate);
     std::ifstream::pos_type pos = ifs.tellg();
 
     std::vector<char> buffer(pos);
@@ -48,12 +47,4 @@ uint8_t& Memory::operator[](uint16_t index) {
     assert(index >= 0 && index < 4096 && "Memory access out of bounds");
 #endif
     return m_data[static_cast<std::size_t>(index)];
-}
-
-// DEBUG
-void Memory::print() const {
-    std::cout << std::hex;
-    for (std::size_t i {0}; i < m_data.size(); ++i) {
-        std::cout << "Address: " << i << "\t" << "Value: " << static_cast<int>(m_data[i]) << "\n"; 
-    }
 }

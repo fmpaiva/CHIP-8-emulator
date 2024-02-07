@@ -4,23 +4,20 @@
 
 using namespace Masks;
 
-uint8_t VRegister::getVX(const uint16_t instruction) const {
+uint8_t& VRegister::accessVX(const uint16_t instruction) {
     return m_variableRegister[(secondNibble & instruction) >> 8];
 }
 
-uint8_t VRegister::getVY(const uint16_t instruction) const {
+uint8_t& VRegister::accessVY(const uint16_t instruction) {
     return m_variableRegister[(thirdNibble & instruction) >> 4];
 }
 
-uint8_t& VRegister::operator()(const uint16_t instruction, Index index) {
-    if (index == Index::vx) {
-        return m_variableRegister[(secondNibble & instruction) >> 8];
-    } else { // VY
-        return m_variableRegister[(thirdNibble & instruction) >> 4];
-    }
+uint8_t& VRegister::accessVF() {
+    return m_variableRegister[0xF];
 }
 
-uint8_t& VRegister::operator()(Index index) {
-    return m_variableRegister[index];
+uint8_t VRegister::accessV0() {
+    return m_variableRegister[0x0];
 }
+
 

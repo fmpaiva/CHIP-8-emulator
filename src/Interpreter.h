@@ -6,6 +6,7 @@
 #include "Constants.h"
 #include "Display.h"
 #include "VRegister.h"
+#include "Keypad.h"
 #include <stack>
 #include <array>
 #include <cstdint>
@@ -28,7 +29,7 @@ private:
     std::stack<uint16_t> m_stack {};
     
     void opDXYN(const uint16_t);
-    void op8XY4(const uint16_t);
+    void opFX0A(const uint16_t);
 };
 
 #endif

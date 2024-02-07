@@ -7,17 +7,11 @@
 
 class VRegister {
 public:
-    enum Index {
-        vx,
-        vy,
-        vf,
-    };
-
     VRegister() = default;
-    uint8_t getVX(const uint16_t) const;
-    uint8_t getVY(const uint16_t) const;
-    uint8_t& operator()(const uint16_t, Index);
-    uint8_t& operator()(Index index);
+    uint8_t& accessVX(const uint16_t);
+    uint8_t& accessVY(const uint16_t);
+    uint8_t& accessVF();
+    uint8_t accessV0();
 
 private:
     std::array<uint8_t, Constants::variableRegisterLength> m_variableRegister {}; // Variable register numberer V0 to VF 

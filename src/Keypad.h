@@ -3,6 +3,8 @@
 
 #include <SDL2/SDL.h>
 #include <cassert>
+#include <iostream>
+#include <cstdint>
 
 /* Computers that CHIP-8 used had a hexadecimal keyboard numbered from 0 to F
  *              1 2 3 C
@@ -17,10 +19,11 @@
  */
 
 namespace Keypad {
-    inline int readInput(const SDL_Event& e) {
-#ifndef RELEASE
-        assert(e.type == SDL_KEYDOWN && "Non-keypress passed to Keypad::readInput");
-#endif
+    inline uint8_t readInput(const SDL_Event& e) {
+        if (e.type != SDL_KEYDOWN) {
+            return 0x0;
+        }
+
         switch (e.key.keysym.sym) {
             case SDLK_1: return 0x1;
             case SDLK_2: return 0x2;
@@ -38,7 +41,7 @@ namespace Keypad {
             case SDLK_x: return 0x0;
             case SDLK_c: return 0xB;
             case SDLK_v: return 0xF;
-            default:     return -1;
+            default:     return 0x0;
         }
     }
 }
