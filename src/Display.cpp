@@ -12,6 +12,8 @@ Display::Display() {
         std::cerr << "Failed to initialize.\n";
         close();
     }
+    
+    render();
 }
 
 Display::~Display() {

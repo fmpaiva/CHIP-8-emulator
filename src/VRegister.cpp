@@ -12,12 +12,6 @@ uint8_t& VRegister::accessVY(const uint16_t instruction) {
     return m_variableRegister[(thirdNibble & instruction) >> 4];
 }
 
-uint8_t& VRegister::accessVF() {
-    return m_variableRegister[0xF];
+uint8_t& VRegister::operator[](std::size_t i) {
+    return m_variableRegister[i];
 }
-
-uint8_t VRegister::accessV0() {
-    return m_variableRegister[0x0];
-}
-
-

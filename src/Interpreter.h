@@ -7,6 +7,7 @@
 #include "Display.h"
 #include "VRegister.h"
 #include "Keypad.h"
+#include <SDL2/SDL.h>
 #include <stack>
 #include <array>
 #include <cstdint>
@@ -15,21 +16,24 @@
 class Interpreter {
 public:
     Interpreter(const std::string&);
-    uint16_t fetch();
-    void opcodeExec(const uint16_t);
+    void emulate();
 
 private:
     Memory m_memory;
     Display m_display {};
     Timer m_delayTimer {};
     Timer m_soundTimer {};
-    VRegister m_vReg {};
-    uint16_t m_indexRegister {}; // Points at locations in memory
-    uint16_t m_programCounter {Constants::programLocationInMemory}; // PC: Points at current instruction in memory
+    VRegister m_vReg {}; // Variable register 
+    uint16_t m_iReg {}; // Points at locations in memory
+    uint16_t m_pCounter {Constants::programLocationInMemory}; // PC: Points at current instruction in memory
     std::stack<uint16_t> m_stack {};
+    std::array<bool, 16> m_keypad {}; // False if key not pressed
     
+    uint16_t fetch();
+    void opcodeExec(const uint16_t);
     void opDXYN(const uint16_t);
-    void opFX0A(const uint16_t);
+    bool handleInput();
+    void waitInput();
 };
 
 #endif
