@@ -1,21 +1,22 @@
 #include "Interpreter.h"
 #include "Constants.h"
 #include "VRegister.h"
+#include "Memory.h"
 #include "Random.h"
 #include <SDL2/SDL.h>
 #include <cstdint>
 #include <iostream>
 #include <array>
-#include <string>
 #include <chrono>
 #include <thread>
+#include <iostream>
 
 uint16_t decodeNNN(const uint16_t);
 uint8_t decodeNN(const uint16_t);
 
 using namespace Masks;
 
-Interpreter::Interpreter(const std::string& path): m_memory {path}, m_display{} {
+Interpreter::Interpreter() {
     for (std::size_t i {0}; i < m_keypad.size(); ++i) {
         m_keypad[i] = false;
     }
@@ -40,6 +41,10 @@ void Interpreter::emulate() {
 
         startTime = std::chrono::steady_clock::now();
     }
+}
+
+bool Interpreter::load(const std::filesystem::path& path) {
+    return m_memory.load(path);
 }
 
 bool Interpreter::handleInput() {
@@ -87,14 +92,14 @@ void Interpreter::opDXYN(const uint16_t instruction) {
     int x {xpos};
     int y {ypos};
 
-    for (std::size_t row {0}; static_cast<int>(row) < (fourthNibble & instruction); ++row) {
-        spriteData = m_memory[m_iReg + row];
+    for (std::size_t row {0}; static_cast<int>(row) < (0x000F & instruction); ++row) {
+        spriteData = m_memory[m_iReg + static_cast<uint16_t>(row)];
         y = (ypos + static_cast<int>(row)) % PIXEL_HEIGHT; 
 
         for (std::size_t col {0}; col < eachBit.size(); ++col) {
             x = (xpos + static_cast<int>(col)) % PIXEL_WIDTH; 
 
-            if (spriteData & eachBit[col]) {
+            if (spriteData & (0x80 >> col)) { // 1000'0000
 
                 if (m_display.isOn(y, x)) {
                     m_vReg[0xF] = 0x1;
@@ -103,21 +108,21 @@ void Interpreter::opDXYN(const uint16_t instruction) {
                 m_display.toggle(y, x);
             }
 
-            if (x == PIXEL_WIDTH - 1) {
+            if (x == PIXEL_WIDTH) {
                 return;
             }
         }
 
-        if (y == PIXEL_HEIGHT - 1) {
+        if (y == PIXEL_HEIGHT) {
             return;
         } 
     }
 }
 
 void Interpreter::opcodeExec(const uint16_t instruction) {
-    switch (instruction & firstNibble) {
+    switch (instruction & 0xF000) {
         case 0x0000: 
-            switch (instruction & (thirdNibble | fourthNibble)) {
+            switch (instruction & (0x00F0 | 0x000F)) {
                 case 0x00E0: // Clears screen
                     m_display.clearScreen();
                     m_display.render();
@@ -166,7 +171,7 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
             break;
 
         case 0x8000:
-            switch (fourthNibble & instruction) {
+            switch (0x000F & instruction) {
                 case 0x0000: // 8XY0: VX is set to VY 
                     m_vReg.accessVX(instruction) = m_vReg.accessVY(instruction);
                     break;
@@ -183,32 +188,38 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
                     m_vReg.accessVX(instruction) ^= m_vReg.accessVY(instruction);
                     break;
 
-                case 0x0004: // 8XY4: VX += VY and VF is set to one if VX overflows
-                    if (m_vReg.accessVX(instruction) + m_vReg.accessVY(instruction) > 255) {
+                case 0x0004: { // 8XY4: VX += VY and VF is set to one if VX overflows
+                    int testValue {m_vReg.accessVX(instruction) + m_vReg.accessVY(instruction)};
+                    m_vReg.accessVX(instruction) += m_vReg.accessVY(instruction);
+                    if (testValue > 255) {
                         m_vReg[0xF] = 0x1;
                     } else {
                         m_vReg[0xF] = 0x0;
                     }
-                    m_vReg.accessVX(instruction) += m_vReg.accessVY(instruction);
                     break;
+                }
 
-                case 0x0005: // 8XY5: VX = VX - VY
-                    if (m_vReg.accessVX(instruction) >= m_vReg.accessVY(instruction)) {
+                case 0x0005: {// 8XY5: VX = VX - VY
+                    bool testValue {m_vReg.accessVX(instruction) >= m_vReg.accessVY(instruction)};
+                    m_vReg.accessVX(instruction) -= m_vReg.accessVY(instruction);
+                    if (testValue) {
                         m_vReg[0xF] = 0x1; 
                     } else {
                         m_vReg[0xF] = 0x0;
                     }
-                    m_vReg.accessVX(instruction) -= m_vReg.accessVY(instruction);
                     break;
+                }
 
-                case 0x0006: // 8XY6: Shits VX one bit to the right
-                    if (0x100 & instruction) { // Sets VF to the bit shifted: 0000'0001'0000'0000 & instruction
+                case 0x0006: {// 8XY6: Shits VX one bit to the right
+                    int testValue {0x100 & instruction};
+                    m_vReg.accessVX(instruction) >>= 1;
+                    if (testValue) { // Sets VF to the bit shifted: 0000'0001'0000'0000 & instruction
                         m_vReg[0xF] = 0x1;
                     } else {
                         m_vReg[0xF] = 0x0;
                     }
-                    m_vReg.accessVX(instruction) >>= 1;
                     break;
+                }
 
                 case 0x0007: // 8XY7: VX = VY - VX
                     if (m_vReg.accessVY(instruction) >= m_vReg.accessVX(instruction)) {
@@ -254,7 +265,7 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
             break;
 
         case 0xE000:
-            switch ((thirdNibble | fourthNibble) & instruction) {
+            switch ((0x00F0 | 0x000F) & instruction) {
                 case 0x009E: // EX9E: skips one instruction if the key corresponding to value VX is pressed
                     if (m_keypad[m_vReg.accessVX(instruction)]) {
                         m_pCounter += 2;
@@ -270,7 +281,7 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
             break;
 
         case 0xF000:
-            switch ((thirdNibble | fourthNibble) & instruction) {
+            switch ((0x00F0 | 0x000F) & instruction) {
                 case 0x0007: // FX07: Sets the VX register to the current value of the delay timer
                     m_vReg.accessVX(instruction) = m_delayTimer.getValue();
                     break;
@@ -288,7 +299,7 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
                     break;
 
                 case 0x000A: { // FX0A get key: waits for key input and assigns the input to VX
-                    for (std::size_t i {0}; i < m_keypad.size(); ++i) {
+                    for (uint8_t i {0}; i < m_keypad.size(); ++i) {
                         if (m_keypad[i]) {
                             m_vReg.accessVX(instruction) = i;
                             return;
@@ -299,7 +310,7 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
                 }
 
                 case 0x0029: // FX29 font character: index register is set to VX 
-                    m_iReg = (fontLocationInMemory + m_vReg.accessVX(instruction)) & fourthNibble; 
+                    m_iReg = (fontLocationInMemory + m_vReg.accessVX(instruction)) & 0x000F; 
                     break;
 
                 case 0x0033: { // FX33: binary-coded decimal conversion
@@ -311,13 +322,13 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
                 }
 
                 case 0x0055: // FX55: Store memory
-                    for (std::size_t i {0}; i <= ((secondNibble & instruction) >> 8); ++i) {
+                    for (uint16_t i {0}; i <= ((0x0F00 & instruction) >> 8); ++i) {
                         m_memory[m_iReg + i] = m_vReg[i];
                     }
                     break;
 
                 case 0x0065: // FX65: Load memory
-                    for (std::size_t i {0}; i <= ((secondNibble & instruction) >> 8); ++i) {
+                    for (uint16_t i {0}; i <= ((0x0F00 & instruction) >> 8); ++i) {
                         m_vReg[i] = m_memory[m_iReg + i];
                     }
                     break;
@@ -333,10 +344,10 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
 }
 
 uint16_t decodeNNN(const uint16_t instruction) {
-    return (secondNibble | thirdNibble | fourthNibble) & instruction;
+    return (0x0F00 | 0x00F0 | 0x000F) & instruction;
 }
 
 uint8_t decodeNN(const uint16_t instruction) {
-    return (thirdNibble | fourthNibble) & instruction;
+    return static_cast<uint8_t>((0x00F0 | 0x000F) & instruction);
 } 
 

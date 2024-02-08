@@ -7,6 +7,7 @@
 #include "Display.h"
 #include "VRegister.h"
 #include <SDL2/SDL.h>
+#include <filesystem>
 #include <stack>
 #include <array>
 #include <cstdint>
@@ -14,11 +15,12 @@
 
 class Interpreter {
 public:
-    Interpreter(const std::string&);
+    Interpreter();
     void emulate();
+    bool load(const std::filesystem::path&);
 
 private:
-    Memory m_memory;
+    Memory m_memory {};
     Display m_display {};
     Timer m_delayTimer {};
     Timer m_soundTimer {};

@@ -4,12 +4,12 @@
 #include <cassert>
 #include <fstream>
 #include <vector>
+#include <filesystem>
 #include <algorithm>
-#include <string>
 #include "Memory.h"
 #include "Constants.h"
 
-Memory::Memory(const std::string& path) {
+Memory::Memory() {
     constexpr std::array<uint8_t, 80> font {
         0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
         0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -31,15 +31,29 @@ Memory::Memory(const std::string& path) {
 
     std::copy(font.begin(), font.end(), m_data.begin() + Constants::fontLocationInMemory);
 
-    std::ifstream ifs(path, std::ios::binary | std::ios::ate);
-    std::ifstream::pos_type pos = ifs.tellg();
+}
 
+bool Memory::load(const std::filesystem::path& path) {
+    for (std::size_t i {Constants::programLocationInMemory}; i < m_data.size(); ++i) {
+        m_data[i] = 0;
+    }
+
+    std::ifstream rom {path, std::ios::binary | std::ios::ate};
+    if (!rom) {
+        return false;
+    }
+
+    std::ifstream::pos_type pos {rom.tellg()};
     std::vector<char> buffer(pos);
 
-    ifs.seekg(0, std::ios::beg);
-    ifs.read(buffer.data(), pos);
+    rom.seekg(0, std::ios::beg);
+    rom.read(buffer.data(), pos);
+
+    rom.close();
 
     std::copy(buffer.begin(), buffer.end(), m_data.begin() + Constants::programLocationInMemory);
+
+    return true;
 }
 
 uint8_t& Memory::operator[](uint16_t index) {

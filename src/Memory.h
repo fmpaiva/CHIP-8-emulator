@@ -3,12 +3,14 @@
 
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include "Constants.h"
 
 class Memory {
 public:
-    Memory(const std::string&);
+    Memory();
+    bool load(const std::filesystem::path&);
     uint8_t& operator[](uint16_t);
 
 private:
