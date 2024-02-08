@@ -14,7 +14,6 @@
 uint16_t decodeNNN(const uint16_t);
 uint8_t decodeNN(const uint16_t);
 
-using namespace Masks;
 
 Interpreter::Interpreter() {
     for (std::size_t i {0}; i < m_keypad.size(); ++i) {
@@ -96,7 +95,7 @@ void Interpreter::opDXYN(const uint16_t instruction) {
         spriteData = m_memory[m_iReg + static_cast<uint16_t>(row)];
         y = (ypos + static_cast<int>(row)) % PIXEL_HEIGHT; 
 
-        for (std::size_t col {0}; col < eachBit.size(); ++col) {
+        for (std::size_t col {0}; col < 8; ++col) {
             x = (xpos + static_cast<int>(col)) % PIXEL_WIDTH; 
 
             if (spriteData & (0x80 >> col)) { // 1000'0000
