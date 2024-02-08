@@ -25,7 +25,7 @@ Interpreter::Interpreter() {
 void Interpreter::emulate() {
     constexpr int frequency {700};    
     constexpr auto loopDuration {std::chrono::milliseconds(static_cast<long long>(1000.0 / frequency))};
-    auto startTime = std::chrono::steady_clock::now();
+    auto startTime {std::chrono::steady_clock::now()};
     
     while (handleInput()) {
 
@@ -210,33 +210,32 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
                     break;
                 }
 
-                case 0x0006: {// 8XY6: Shits VX one bit to the right
-                    int testValue {0x100 & instruction};
+                case 0x0006: { // 8XY6: Shits VX one bit to the right
+                    auto shiftedBit {static_cast<uint8_t>(0x1 & m_vReg.accessVX(instruction))};
                     m_vReg.accessVX(instruction) >>= 1;
-                    if (testValue) { // Sets VF to the bit shifted: 0000'0001'0000'0000 & instruction
-                        m_vReg[0xF] = 0x1;
+                    m_vReg[0xF] = shiftedBit;
+                    break;
+                }
+
+                case 0x0007: { // 8XY7: VX = VY - VX
+                    bool testValue {m_vReg.accessVY(instruction) >= m_vReg.accessVX(instruction)};
+                    m_vReg.accessVX(instruction) = m_vReg.accessVY(instruction) - m_vReg.accessVX(instruction);
+                    if (testValue) {
+                        m_vReg[0xF] = 0x1; 
                     } else {
                         m_vReg[0xF] = 0x0;
                     }
                     break;
                 }
-
-                case 0x0007: // 8XY7: VX = VY - VX
-                    if (m_vReg.accessVY(instruction) >= m_vReg.accessVX(instruction)) {
-                        m_vReg[0xF] = 0x1; 
-                    } else {
-                        m_vReg[0xF] = 0x0;
-                    }
-                    m_vReg.accessVX(instruction) = m_vReg.accessVY(instruction) - m_vReg.accessVX(instruction);
-                    break;
                 
                 case 0x000E: // 8XYE: Shifts VX one bit to the left 
-                    if (0x800 & instruction) { // 0000'1000'0000'0000
+                    auto shiftedBit {static_cast<uint8_t>(0x8 & m_vReg.accessVX(instruction))};
+                    m_vReg.accessVX(instruction) <<= 1;
+                    if (shiftedBit) {
                         m_vReg[0xF] = 0x1;
                     } else {
                         m_vReg[0xF] = 0x0;
                     }
-                    m_vReg.accessVX(instruction) <<= 1;
                     break;
             }
             break;
@@ -273,7 +272,7 @@ void Interpreter::opcodeExec(const uint16_t instruction) {
                     break;
 
                 case 0x0A1: // EXA1: skips one instruction if the key is not pressed
-                    if (m_keypad[m_vReg.accessVX(instruction)]) {
+                    if (!m_keypad[m_vReg.accessVX(instruction)]) {
                         m_pCounter += 2;
                     }
                     break;
