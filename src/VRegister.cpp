@@ -1,8 +1,6 @@
 #include "VRegister.h"
 #include <cstdint>
 
-using namespace Masks;
-
 uint8_t& VRegister::accessVX(const uint16_t instruction) {
     return m_variableRegister[(0x0F00 & instruction) >> 8];
 }
