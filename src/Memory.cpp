@@ -30,7 +30,6 @@ Memory::Memory() {
     };
 
     std::copy(font.begin(), font.end(), m_data.begin() + Constants::fontLocationInMemory);
-
 }
 
 bool Memory::load(const std::filesystem::path& path) {
